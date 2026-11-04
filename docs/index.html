@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transfers and Need in Buenos Aires</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root { --ink:#1f2328; --muted:#5b6470; --line:#d9dde3; --bg:#ffffff; --panel:#ffffff; --accent:#7a1c2e; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --ink:#e8eaed; --muted:#a6adb7; --line:#3a3f46; --bg:#16181b; --panel:#1f2226; --accent:#e07a8a; }
+  }
+  :root[data-theme="dark"] { --ink:#e8eaed; --muted:#a6adb7; --line:#3a3f46; --bg:#16181b; --panel:#1f2226; --accent:#e07a8a; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--ink);
+    font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  #app { display:flex; height:100%; }
+  #panel { width:360px; max-width:100%; overflow-y:auto; padding:18px 18px 24px; border-right:1px solid var(--line); background:var(--panel); }
+  #map { flex:1; }
+  h1 { font-size:19px; line-height:1.25; margin:0 0 6px; }
+  .sub { color:var(--muted); margin:0 0 14px; font-size:13px; }
+  h2 { font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin:18px 0 8px; }
+  .layers label { display:flex; gap:8px; align-items:flex-start; padding:5px 0; cursor:pointer; }
+  .layers input { margin-top:3px; }
+  .layers small { display:block; color:var(--muted); font-size:12px; }
+  .finding { margin:0 0 10px; padding-left:10px; border-left:3px solid var(--accent); }
+  .legend { background:var(--panel); color:var(--ink); padding:8px 10px; border-radius:6px; border:1px solid var(--line); font-size:12px; line-height:1.5; min-width:150px; }
+  .legend .t { font-weight:600; margin-bottom:4px; }
+  .legend i { display:inline-block; width:14px; height:12px; margin-right:6px; vertical-align:-1px; border:1px solid rgba(0,0,0,.15); }
+  .leaflet-popup-content { font-size:13px; }
+  .leaflet-popup-content b { font-size:14px; }
+  #loading { position:absolute; z-index:1000; top:12px; left:50%; transform:translateX(-50%); background:var(--panel); border:1px solid var(--line); padding:6px 12px; border-radius:6px; font-size:13px; }
+  a { color:var(--accent); }
+  .foot { color:var(--muted); font-size:12px; margin-top:18px; }
+  @media (max-width: 760px) {
+    #app { flex-direction:column; }
+    #panel { width:100%; height:auto; max-height:45%; border-right:none; border-bottom:1px solid var(--line); padding:14px 16px; }
+    #map { min-height:55%; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <aside id="panel">
+    <h1>Do provincial transfers follow need?</h1>
+    <p class="sub">Buenos Aires province: 135 municipalities (partidos), 23,845 inhabited census tracts. Census 2022, transfers 2025, public health facilities 2025.</p>
+
+    <h2>Map layer</h2>
+    <div class="layers" id="layers">
+      <label><input type="radio" name="layer" value="tract_nbi" checked><span>Unmet Basic Needs by census tract<small>Share of households with NBI</small></span></label>
+      <label><input type="radio" name="layer" value="tract_ipmh"><span>Current-resource deprivation by tract<small>IPMH, an income proxy</small></span></label>
+      <label><input type="radio" name="layer" value="part_nbi"><span>Unmet Basic Needs by partido<small>What partido averages show</small></span></label>
+      <label><input type="radio" name="layer" value="part_tpc"><span>Transfers per person, 2025<small>Provincial transfers to municipalities</small></span></label>
+      <label><input type="radio" name="layer" value="part_gap"><span>Change under a needs-weighted rule<small>Same pool, 50% population and 50% NBI households</small></span></label>
+    </div>
+    <h2>Overlays</h2>
+    <div class="layers">
+      <label><input type="checkbox" id="ov_hosp"><span>Public general hospitals (290)</span></label>
+      <label><input type="checkbox" id="ov_caps"><span>Primary care centres (2,121)<small>Visible when zoomed in</small></span></label>
+    </div>
+
+    <h2>Findings</h2>
+    <p class="finding">83% of the variation in tract deprivation is <b>within</b> partidos, not between them. Partido averages hide most of where need is.</p>
+    <p class="finding">Transfers per person track municipal size, not need. Greater Buenos Aires gets about 190,000 pesos per person against 348,000 in the rest of the province, with higher deprivation.</p>
+    <p class="finding">Primary care reaches deprived tracts, but public hospitals are farther from them. The coparticipación formula rewards hospital capacity, so transfers follow existing hospitals rather than need.</p>
+
+    <p class="foot">Code, data sources and methods: <a href="https://github.com/diegolestani/pba-transfers-need">GitHub repository</a>.<br>
+    Sources: INDEC, Censo 2022 (REDATAM); Province of Buenos Aires open data portal (tract boundaries, transfers, health facilities; CC BY 4.0). The needs-weighted rule is illustrative, not a policy proposal.</p>
+  </aside>
+  <div id="map"></div>
+</div>
+<div id="loading">Loading census tracts…</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const map = L.map('map', { preferCanvas: true, zoomSnap: 0.5 }).setView([-36.6, -60.0], 6.5);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap contributors &copy; CARTO', maxZoom: 18
+}).addTo(map);
+const renderer = L.canvas({ padding: 0.5 });
+
+const SCALES = {
+  nbi:  { breaks:[2,5,10,20], colors:['#f2efe9','#f6c99a','#ec8a5b','#c94a3a','#7a1c2e'], unit:'%', title:'Households with NBI' },
+  ipmh: { breaks:[10,20,30,40], colors:['#f2efe9','#f6c99a','#ec8a5b','#c94a3a','#7a1c2e'], unit:'%', title:'Current-resource deprivation (IPMH)' },
+  tpc:  { breaks:[200000,300000,500000,1000000], colors:['#f1eef6','#bdc9e1','#74a9cf','#2b8cbe','#045a8d'], unit:' $', title:'Transfers per person, 2025 (pesos)' },
+  gap:  { breaks:[-50,-20,20,50], colors:['#3d5a8a','#8aa6c8','#f2efe9','#ec8a5b','#7a1c2e'], unit:'%', title:'Change vs actual transfers' }
+};
+const fmt = n => n.toLocaleString('en-US');
+function colorFor(s, v) { if (v === null || v === undefined || isNaN(v)) return '#cccccc';
+  let k = 0; while (k < s.breaks.length && v >= s.breaks[k]) k++; return s.colors[k]; }
+function labelsFor(key) {
+  const b = SCALES[key].breaks;
+  if (key === 'tpc') return ['< 200k', '200k–300k', '300k–500k', '500k–1M', '1M or more'];
+  if (key === 'gap') return ['Lose > 50%', 'Lose 20–50%', 'Within ±20%', 'Gain 20–50%', 'Gain > 50%'];
+  return [`< ${b[0]}%`, `${b[0]}–${b[1]}%`, `${b[1]}–${b[2]}%`, `${b[2]}–${b[3]}%`, `${b[3]}% or more`];
+}
+
+const legend = L.control({ position: 'bottomright' });
+legend.onAdd = () => L.DomUtil.create('div', 'legend');
+legend.addTo(map);
+function setLegend(key, note) {
+  const s = SCALES[key], labs = labelsFor(key);
+  legend.getContainer().innerHTML = `<div class="t">${s.title}</div>` +
+    s.colors.map((c, i) => `<div><i style="background:${c}"></i>${labs[i]}</div>`).join('') +
+    (note ? `<div style="margin-top:4px;color:var(--muted)">${note}</div>` : '');
+}
+
+let tracts = null, partidos = null, outline = null, current = null;
+const hospLayer = L.layerGroup(), capsLayer = L.layerGroup();
+
+function tractStyle(field, key) {
+  return f => ({ renderer, stroke: false, fillOpacity: f.properties.ur === 'R' ? 0.35 : 0.85,
+                 fillColor: colorFor(SCALES[key], f.properties[field]) });
+}
+function partidoStyle(field, key) {
+  return f => ({ renderer, color: '#444', weight: 0.6, fillOpacity: 0.8,
+                 fillColor: colorFor(SCALES[key], f.properties[field]) });
+}
+function tractPopup(f) {
+  const p = f.properties;
+  return `<b>Census tract ${p.id}</b><br>${p.p}${p.ur === 'R' ? ' (rural)' : ''}<br>` +
+         `Households: ${fmt(p.h)}<br>With NBI: ${p.n}%<br>Current-resource deprivation: ${p.i}%`;
+}
+function partidoPopup(f) {
+  const p = f.properties;
+  return `<b>${p.p}</b>${p.gba ? ' · Greater Buenos Aires' : ''}<br>Population: ${fmt(p.pop)}<br>` +
+         `Households with NBI: ${p.n}%<br>Transfers per person, 2025: $${fmt(p.tpc)}<br>` +
+         `Under needs-weighted rule: ${p.gap > 0 ? '+' : ''}${p.gap}%<br>Public general hospitals: ${p.hos} · Primary care centres: ${p.caps}`;
+}
+
+function show(layerKey) {
+  if (current) map.removeLayer(current);
+  if (outline) outline.bringToFront();
+  if (layerKey.startsWith('tract')) {
+    const field = layerKey === 'tract_nbi' ? 'n' : 'i', key = layerKey === 'tract_nbi' ? 'nbi' : 'ipmh';
+    current = L.geoJSON(tracts, { pointToLayer: noPoint, style: tractStyle(field, key), onEachFeature: (f, l) => l.bindPopup(tractPopup(f)) }).addTo(map);
+    setLegend(key, 'Rural tracts shown faded');
+    outline.addTo(map); outline.bringToFront();
+  } else {
+    const cfg = { part_nbi: ['n', 'nbi'], part_tpc: ['tpc', 'tpc'], part_gap: ['gap', 'gap'] }[layerKey];
+    current = L.geoJSON(partidos, { pointToLayer: noPoint, style: partidoStyle(cfg[0], cfg[1]), onEachFeature: (f, l) => l.bindPopup(partidoPopup(f)) }).addTo(map);
+    if (map.hasLayer(outline)) map.removeLayer(outline);
+    setLegend(cfg[1], layerKey === 'part_gap' ? 'Illustrative static reallocation' : '');
+  }
+  [hospLayer, capsLayer].forEach(g => { if (map.hasLayer(g)) g.eachLayer(m => m.bringToFront && m.bringToFront()); });
+}
+
+function updateCaps() {
+  const on = document.getElementById('ov_caps').checked && map.getZoom() >= 10.5;
+  if (on && !map.hasLayer(capsLayer)) capsLayer.addTo(map);
+  if (!on && map.hasLayer(capsLayer)) map.removeLayer(capsLayer);
+}
+
+// Polygon layers only: never draw default pin markers for stray point parts
+const noPoint = (f, ll) => L.circleMarker(ll, { radius: 0, stroke: false, fill: false, interactive: false });
+
+Promise.all([
+  fetch('data/partidos.geojson').then(r => r.json()),
+  fetch('data/facilities.geojson').then(r => r.json()),
+  fetch('data/tracts.geojson').then(r => r.json())
+]).then(([p, fac, t]) => {
+  partidos = p; tracts = t;
+  outline = L.geoJSON(partidos, { pointToLayer: noPoint, style: { renderer, color: '#333', weight: 0.7, fill: false }, interactive: false });
+  fac.features.forEach(f => {
+    const [lng, lat] = f.geometry.coordinates, pr = f.properties;
+    const m = L.circleMarker([lat, lng], pr.t === 'H'
+      ? { renderer, radius: 5, color: '#fff', weight: 1, fillColor: '#111', fillOpacity: 1 }
+      : { renderer, radius: 3, color: '#fff', weight: 0.5, fillColor: '#2b8cbe', fillOpacity: 0.9 })
+      .bindPopup(`<b>${pr.nm}</b><br>${pr.t === 'H' ? 'General hospital (inpatient)' : 'Primary care centre'} · ${pr.dep}`);
+    (pr.t === 'H' ? hospLayer : capsLayer).addLayer(m);
+  });
+  document.getElementById('loading').remove();
+  show('tract_nbi');
+}).catch(e => { document.getElementById('loading').textContent = 'Could not load map data.'; console.error(e); });
+
+document.querySelectorAll('input[name="layer"]').forEach(r => r.addEventListener('change', e => show(e.target.value)));
+document.getElementById('ov_hosp').addEventListener('change', e => e.target.checked ? hospLayer.addTo(map) : map.removeLayer(hospLayer));
+document.getElementById('ov_caps').addEventListener('change', updateCaps);
+map.on('zoomend', updateCaps);
+</script>
+</body>
+</html>

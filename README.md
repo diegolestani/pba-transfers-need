@@ -1,6 +1,14 @@
 # Do provincial transfers follow need? Buenos Aires municipalities
 
-Work in progress. A spatial look at how the Province of Buenos Aires distributes resources to its 135 municipalities (partidos), compared with where structural deprivation is concentrated at census-tract level (*radio censal*, INDEC's smallest census unit, about 250 households on average in Buenos Aires).
+How the Province of Buenos Aires distributes resources to its 135 municipalities (partidos), compared with where deprivation is concentrated at census-tract level (*radio censal*, INDEC's smallest census unit, about 250 households on average in Buenos Aires), and with access to public health facilities.
+
+**[Interactive map](https://diegolestani.github.io/pba-transfers-need/)**
+
+## Summary
+
+1. **Need sits below the level at which money is allocated.** 83% of the variation in tract-level deprivation (Unmet Basic Needs, NBI) lies within partidos rather than between them, and high-deprivation clusters span several partidos.
+2. **Transfers do not follow need.** In 2025, provincial transfers to municipalities were concentrated among the less deprived partidos (concentration coefficient +0.11, against −0.18 for NBI households). Per capita transfers are explained mostly by municipal size and by hospital provision, which the coparticipación formula rewards; once those are accounted for, deprivation has no significant association with transfers.
+3. **Access mirrors the formula.** Primary care centres are located close to deprived tracts, but public general hospitals are farther from them: in Greater Buenos Aires, 10.8% of people in the most deprived quintile live more than 5 km from one, against 1.5% in the least deprived.
 
 ## Data
 
@@ -28,10 +36,12 @@ IPMH (Índice de Privación Material de los Hogares) classifies households by de
 | `R/04_transfers.R` | 2025 transfers per capita by partido, concentration curves with respect to need, size-controlled regression, and a needs-based counterfactual allocation (Figures 3–5) |
 | `R/05_access.R` | Straight-line distance from each tract to the nearest public general hospital and primary care centre, by deprivation quintile; hospital provision and transfers (Figure 6) |
 | `R/06_spatial_dependence.R` | Global and local Moran's I of deprivation (tracts) and transfers per capita (partidos); robustness of the within-partido share to excluding small tracts (Figure 7) |
+| `R/07_web_map_data.R` | Exports simplified GeoJSON layers for the interactive map in `docs/` (served with GitHub Pages) |
 
-Run the scripts in order from the repository root, e.g. `Rscript R/01_clean_census.R`.
 
-## First results
+## Results
+
+### Deprivation within and between partidos
 
 Most of the variation in deprivation is **within** partidos, not between them. Weighting by households, 83% of the variance in tract NBI rates and 77% for IPMH current-resource deprivation lies within partidos. Any allocation rule that works with partido averages misses most of where need is. The share is stable when small, noisy tracts are excluded (82% with tracts of 50+ households, 81% with 200+).
 
@@ -69,6 +79,23 @@ Distances are straight-line from each tract's representative point; travel times
 Deprivation is strongly clustered: the global Moran's I of tract NBI rates is 0.45 (0.49 for IPMH current-resource deprivation; queen contiguity, row-standardised weights). Local Moran's I identifies 1,261 tracts in significant high-deprivation clusters after correcting for multiple testing (false discovery rate, 5%). In Greater Buenos Aires these clusters form belts along the western and southern edge of the conurbano that span several partidos, so no single municipality's budget lines up with them. At partido level, transfers per capita are also spatially clustered (Moran's I 0.64), reflecting the rural-interior versus conurbano divide.
 
 ![LISA clusters](output/figures/fig7_lisa_gba.png)
+
+## Limitations
+
+- **NBI is a structural measure.** It captures housing, sanitation, schooling and subsistence capacity, not income. IPMH current-resource deprivation is used as a check closer to income, and the main results hold with it, though more weakly.
+- **Years differ.** Deprivation and population are from the 2022 census, transfers and facilities from 2025.
+- **The analysis is descriptive.** The regressions describe how transfers are associated with size, need and hospital provision; they are not causal estimates.
+- **Distances are straight-line** from each tract's representative point. Travel times over the road network would be longer, particularly in rural tracts.
+- **The reallocation is illustrative.** It ignores the fixed costs of small municipalities, the services the current formula pays for, own revenue capacity and behavioural responses.
+- **Small tracts give noisy rates.** The within-partido share is robust to excluding tracts with fewer than 50, 100 or 200 households (81–82%).
+
+Natural next steps: small area estimates of income poverty combining EPH with census and satellite covariates; road-network travel times; and the composition of the coparticipación coefficient by component.
+
+## Reproducing
+
+Run the scripts in order from the repository root (`Rscript R/01_clean_census.R`, then 02 to 07). Raw data are in `data/raw/` as downloaded; generated GeoPackages are written to `data/processed/` and are not tracked.
+
+Code developed with AI assistance; analysis design, checks and interpretation by the author.
 
 ## Requirements
 

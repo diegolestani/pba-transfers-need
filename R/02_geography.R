@@ -36,6 +36,8 @@ tracts <- tracts |>
   mutate(partido = title_name(partido_raw), gba24 = partido_raw %in% GBA24,
          partido = ifelse(cod_partido == "06134", "Ca\u00f1uelas", partido)) |>
   st_make_valid() |>
+  st_collection_extract("POLYGON") |>          # drop stray points/lines left by st_make_valid
+  st_cast("MULTIPOLYGON") |>
   st_transform(CRS_PBA)
 stopifnot(sum(GBA24 %in% tracts$partido_raw) == 24)
 
