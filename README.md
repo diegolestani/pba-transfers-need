@@ -8,7 +8,7 @@ How the Province of Buenos Aires distributes resources to its 135 municipalities
 
 1. **Need sits below the level at which money is allocated.** 83% of the variation in tract-level deprivation (Unmet Basic Needs, NBI) lies within partidos rather than between them, and high-deprivation clusters span several partidos.
 2. **Transfers do not follow need.** In 2025, provincial transfers to municipalities were concentrated among the less deprived partidos (concentration coefficient +0.11, against −0.18 for NBI households). Per capita transfers are explained mostly by municipal size and by hospital provision, which the coparticipación formula rewards; once those are accounted for, deprivation has no significant association with transfers.
-3. **Access mirrors the formula.** Primary care centres are located close to deprived tracts, but public general hospitals are farther from them: in Greater Buenos Aires, 10.8% of people in the most deprived quintile live more than 5 km from one, against 1.5% in the least deprived.
+3. **Hospitals and sewers lag behind where deprivation is.** Primary care centres are located close to deprived tracts, but public general hospitals are farther from them: in Greater Buenos Aires, 10.8% of people in the most deprived quintile live more than 5 km from one, against 1.5% in the least deprived. Sewer networks show the same pattern: 87% of households in the least deprived quintile of Greater Buenos Aires tracts are connected, against 28% in the most deprived.
 
 ## Data
 
@@ -17,6 +17,7 @@ How the Province of Buenos Aires distributes resources to its 135 municipalities
 | INDEC, Censo Nacional de Población, Hogares y Viviendas 2022 (REDATAM, base CPV2022, *Lista de áreas*) | Households by Unmet Basic Needs (NBI) status | Census tract | `data/raw/NBI_tot_BA_2022.xlsx` |
 | Same | Population in private dwellings, by sex | Census tract | `data/raw/Pop_Total_BA_2022.xlsx` |
 | Same | Households by Material Deprivation Index (IPMH) | Census tract | `data/raw/IPMH_BA_2022.xlsx` |
+| Same | Households by source of drinking water and toilet drainage | Census tract | `data/raw/water_sewer_BA_2022.xlsx` |
 | Province of Buenos Aires open data portal, *Radios censales* (CC BY 4.0) | Census tract boundaries, 2022 | Census tract | `data/raw/radios-censales-2022-shp.zip` |
 | Province of Buenos Aires open data portal, *Transferencias a municipios* (CC BY 4.0), Ministry of Economy | Monthly transfers to municipalities by concept, Jan 2010 – Jul 2026 | Partido | `data/raw/transferencias-municipios-012010_072026.csv` |
 | Province of Buenos Aires open data portal, *Establecimientos de salud* (CC BY 4.0), Ministry of Health | Public health facilities with coordinates, type and dependency, 2025 | Point | `data/raw/establecimientos_salud_publicos-2025.csv` |
@@ -36,6 +37,7 @@ IPMH (Índice de Privación Material de los Hogares) classifies households by de
 | `R/04_transfers.R` | 2025 transfers per capita by partido, concentration curves with respect to need, size-controlled regression, and a needs-based counterfactual allocation (Figures 3–5) |
 | `R/05_access.R` | Straight-line distance from each tract to the nearest public general hospital and primary care centre, by deprivation quintile; hospital provision and transfers (Figure 6) |
 | `R/06_spatial_dependence.R` | Global and local Moran's I of deprivation (tracts) and transfers per capita (partidos); robustness of the within-partido share to excluding small tracts (Figure 7) |
+| `R/08_infrastructure.R` | Piped water and sewer connection by tract deprivation, within-partido variation, and concentration of the sewer deficit vs. transfers (Figure 8) |
 | `R/07_web_map_data.R` | Exports simplified GeoJSON layers for the interactive map in `docs/` (served with GitHub Pages) |
 
 
@@ -73,6 +75,18 @@ Using the 2025 registry of public facilities (290 general hospitals with inpatie
 Distances are straight-line from each tract's representative point; travel times over the road network would be longer, especially in rural tracts. Facilities are 2025 and population 2022.
 
 ![Access by quintile](output/figures/fig6_access_by_quintile.png)
+
+### Network infrastructure
+
+The census records whether each household gets water from the public network and whether its toilet drains to the public sewer. 76% of households in the province have piped public water and 59% a sewer connection (households without a toilet are counted as not connected).
+
+- **The sewer gap is steeply graded by deprivation.** In Greater Buenos Aires, 87% of households in the least deprived quintile of tracts are connected, against 28% in the most deprived; in the rest of the province, 82% against 23%. Piped water follows the same gradient, less steeply.
+- **Most of it is within partidos.** 67% of the variation in sewer deficits across tracts lies within partidos (48% for water), so municipal averages again hide where the gaps are.
+- **Transfers ignore it.** Ranking partidos by their sewer deficit, households without sewer are concentrated in the most deficient partidos (concentration coefficient −0.27), while transfers are distributed almost exactly in proportion to population (−0.00).
+
+NBI's sanitation component counts households without a toilet, not those without a sewer connection, so the two measures overlap only slightly.
+
+![Infrastructure by quintile](output/figures/fig8_infrastructure_by_quintile.png)
 
 ### Spatial clustering
 

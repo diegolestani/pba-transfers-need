@@ -37,6 +37,7 @@ tracts <- st_read("data/processed/tracts.gpkg", quiet = TRUE) |>
   st_collection_extract("POLYGON") |> st_cast("MULTIPOLYGON") |>
   transmute(id = cod_radio, p = partido, ur = urban_rural,
             n = round(100 * nbi_share, 1), i = round(100 * ipmh_corr_share, 1),
+            s = round(100 * (1 - sewer_net_share), 1), w = round(100 * (1 - water_net_share), 1),
             h = hog_total) |>
   st_transform(4326)
 write_geojson(tracts, "docs/data/tracts.geojson", digits = 4)

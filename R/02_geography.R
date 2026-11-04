@@ -48,7 +48,7 @@ census <- read.csv("data/processed/census_radios.csv",
 stopifnot(all(census$cod_radio %in% tracts$cod_radio))
 tracts <- tracts |>
   left_join(select(census, -cod_partido, -cod_prov, -cod_fraccion), by = "cod_radio") |>
-  mutate(across(c(hog_total, hog_nbi, ipmh_corriente, ipmh_convergente, pob_total),
+  mutate(across(c(hog_total, hog_nbi, ipmh_corriente, ipmh_convergente, agua_red, desague_red, pob_total),
                 ~ coalesce(.x, 0)),
          area_km2 = as.numeric(st_area(geometry)) / 1e6)
 
@@ -57,10 +57,13 @@ partidos <- tracts |>
   group_by(cod_partido, partido, gba24) |>
   summarise(hog_total = sum(hog_total), hog_nbi = sum(hog_nbi),
             hog_ipmh_corr = sum(ipmh_corriente + ipmh_convergente),
+            hog_agua_red = sum(agua_red), hog_desague_red = sum(desague_red),
             pob_total = sum(pob_total), area_km2 = sum(area_km2),
             n_tracts = sum(hog_total > 0), .groups = "drop") |>
   mutate(nbi_share = hog_nbi / hog_total,
          ipmh_corr_share = hog_ipmh_corr / hog_total,
+         water_net_share = hog_agua_red / hog_total,
+         sewer_net_share = hog_desague_red / hog_total,
          density = pob_total / area_km2)
 stopifnot(nrow(partidos) == 135)
 

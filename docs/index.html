@@ -49,6 +49,7 @@
     <div class="layers" id="layers">
       <label><input type="radio" name="layer" value="tract_nbi" checked><span>Unmet Basic Needs by census tract<small>Share of households with NBI</small></span></label>
       <label><input type="radio" name="layer" value="tract_ipmh"><span>Current-resource deprivation by tract<small>IPMH, an income proxy</small></span></label>
+      <label><input type="radio" name="layer" value="tract_sewer"><span>Households without sewer connection<small>Public sewer network, by census tract</small></span></label>
       <label><input type="radio" name="layer" value="part_nbi"><span>Unmet Basic Needs by partido<small>What partido averages show</small></span></label>
       <label><input type="radio" name="layer" value="part_tpc"><span>Transfers per person, 2025<small>Provincial transfers to municipalities</small></span></label>
       <label><input type="radio" name="layer" value="part_gap"><span>Change under a needs-weighted rule<small>Same pool, 50% population and 50% NBI households</small></span></label>
@@ -63,6 +64,8 @@
     <p class="finding"><b>Need sits below the level where money is allocated.</b> 83% of the variation in deprivation across census tracts is <em>within</em> partidos, not between them. Partido averages hide most of where need is.</p>
     <p class="finding"><b>Transfers do not follow need.</b> They are concentrated in the less deprived partidos. Greater Buenos Aires receives about 190,000 pesos per person in 2025, against 348,000 in the rest of the province, despite higher deprivation. Municipal size and hospital provision explain most of the difference.</p>
     <p class="finding"><b>Hospitals, not primary care, are the gap.</b> Primary care centres are close to deprived tracts, but public general hospitals are farther from them: in Greater Buenos Aires, 10.8% of people in the most deprived fifth of tracts live more than 5 km from one, against 1.5% in the least deprived.</p>
+
+    <p class="finding"><b>Sewer networks are missing where deprivation is.</b> In Greater Buenos Aires, 87% of households in the least deprived fifth of tracts are connected to the public sewer, against 28% in the most deprived fifth. Transfers are not related to where the sewer deficit is.</p>
 
     <h2>Why health facilities are on the map</h2>
     <p class="sub">Municipalities receive a fixed share of provincial revenue (<em>coparticipación</em>, Ley 10.559). <b>37% of that share is allocated on health indicators</b>: available beds, consultations, patient-days, discharges and facilities with inpatient care. Municipalities that run more hospitals receive more money, whatever their level of deprivation, so the location of hospitals shapes where transfers go.</p>
@@ -91,6 +94,7 @@ const renderer = L.canvas({ padding: 0.5 });
 const SCALES = {
   nbi:  { breaks:[2,5,10,20], colors:['#f2efe9','#f6c99a','#ec8a5b','#c94a3a','#7a1c2e'], unit:'%', title:'Households with Unmet Basic Needs (NBI)' },
   ipmh: { breaks:[10,20,30,40], colors:['#f2efe9','#f6c99a','#ec8a5b','#c94a3a','#7a1c2e'], unit:'%', title:'Households deprived of current resources (IPMH)' },
+  sewer:{ breaks:[20,40,60,80], colors:['#f1eef6','#bdc9e1','#74a9cf','#2b8cbe','#045a8d'], unit:'%', title:'Households not connected to the public sewer' },
   tpc:  { breaks:[200000,300000,500000,1000000], colors:['#f1eef6','#bdc9e1','#74a9cf','#2b8cbe','#045a8d'], unit:' $', title:'Transfers per person, 2025 (pesos)' },
   gap:  { breaks:[-50,-20,20,50], colors:['#3d5a8a','#8aa6c8','#f2efe9','#ec8a5b','#7a1c2e'], unit:'%', title:'Change vs actual 2025 transfers under the needs-weighted rule' }
 };
@@ -128,7 +132,8 @@ function partidoStyle(field, key) {
 function tractPopup(f) {
   const p = f.properties;
   return `<b>Census tract ${p.id}</b><br>${p.p}${p.ur === 'R' ? ' (rural)' : ''}<br>` +
-         `Households: ${fmt(p.h)}<br>With NBI: ${p.n}%<br>Current-resource deprivation: ${p.i}%`;
+         `Households: ${fmt(p.h)}<br>With NBI: ${p.n}%<br>Current-resource deprivation: ${p.i}%<br>` +
+         `Without sewer connection: ${p.s}% · without piped water: ${p.w}%`;
 }
 function partidoPopup(f) {
   const p = f.properties;
@@ -141,9 +146,11 @@ function show(layerKey) {
   if (current) map.removeLayer(current);
   if (outline) outline.bringToFront();
   if (layerKey.startsWith('tract')) {
-    const field = layerKey === 'tract_nbi' ? 'n' : 'i', key = layerKey === 'tract_nbi' ? 'nbi' : 'ipmh';
+    const field = { tract_nbi: 'n', tract_ipmh: 'i', tract_sewer: 's' }[layerKey],
+          key = { tract_nbi: 'nbi', tract_ipmh: 'ipmh', tract_sewer: 'sewer' }[layerKey];
     current = L.geoJSON(tracts, { pointToLayer: noPoint, style: tractStyle(field, key), onEachFeature: (f, l) => l.bindPopup(tractPopup(f)) }).addTo(map);
-    setLegend(key, (key === 'nbi' ? 'Crowding, poor housing, no toilet,<br>child out of school or low income capacity.<br>' : '') + 'Rural tracts shown faded');
+    setLegend(key, (key === 'nbi' ? 'Crowding, poor housing, no toilet,<br>child out of school or low income capacity.<br>' :
+                    key === 'sewer' ? 'Network infrastructure is a provincial and<br>municipal investment responsibility.<br>' : '') + 'Rural tracts shown faded');
     outline.addTo(map); outline.bringToFront();
   } else {
     const cfg = { part_nbi: ['n', 'nbi'], part_tpc: ['tpc', 'tpc'], part_gap: ['gap', 'gap'] }[layerKey];
