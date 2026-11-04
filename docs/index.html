@@ -25,7 +25,7 @@
   .layers small { display:block; color:var(--muted); font-size:12px; }
   .finding { margin:0 0 10px; padding-left:10px; border-left:3px solid var(--accent); }
   .legend { background:var(--panel); color:var(--ink); padding:8px 10px; border-radius:6px; border:1px solid var(--line); font-size:12px; line-height:1.5; min-width:150px; }
-  .legend .t { font-weight:600; margin-bottom:4px; }
+  .legend .t { font-weight:600; margin-bottom:4px; max-width:230px; }
   .legend i { display:inline-block; width:14px; height:12px; margin-right:6px; vertical-align:-1px; border:1px solid rgba(0,0,0,.15); }
   .leaflet-popup-content { font-size:13px; }
   .leaflet-popup-content b { font-size:14px; }
@@ -59,10 +59,18 @@
       <label><input type="checkbox" id="ov_caps"><span>Primary care centres (2,121)<small>Visible when zoomed in</small></span></label>
     </div>
 
-    <h2>Findings</h2>
-    <p class="finding">83% of the variation in tract deprivation is <b>within</b> partidos, not between them. Partido averages hide most of where need is.</p>
-    <p class="finding">Transfers per person track municipal size, not need. Greater Buenos Aires gets about 190,000 pesos per person against 348,000 in the rest of the province, with higher deprivation.</p>
-    <p class="finding">Primary care reaches deprived tracts, but public hospitals are farther from them. The coparticipación formula rewards hospital capacity, so transfers follow existing hospitals rather than need.</p>
+    <h2>Key takeaways</h2>
+    <p class="finding"><b>Need sits below the level where money is allocated.</b> 83% of the variation in deprivation across census tracts is <em>within</em> partidos, not between them. Partido averages hide most of where need is.</p>
+    <p class="finding"><b>Transfers do not follow need.</b> They are concentrated in the less deprived partidos. Greater Buenos Aires receives about 190,000 pesos per person in 2025, against 348,000 in the rest of the province, despite higher deprivation. Municipal size and hospital provision explain most of the difference.</p>
+    <p class="finding"><b>Hospitals, not primary care, are the gap.</b> Primary care centres are close to deprived tracts, but public general hospitals are farther from them: in Greater Buenos Aires, 10.8% of people in the most deprived fifth of tracts live more than 5 km from one, against 1.5% in the least deprived.</p>
+
+    <h2>Why health facilities are on the map</h2>
+    <p class="sub">Municipalities receive a fixed share of provincial revenue (<em>coparticipación</em>, Ley 10.559). <b>37% of that share is allocated on health indicators</b>: available beds, consultations, patient-days, discharges and facilities with inpatient care. Municipalities that run more hospitals receive more money, whatever their level of deprivation, so the location of hospitals shapes where transfers go.</p>
+
+    <h2>What the measures mean</h2>
+    <p class="sub"><b>Unmet Basic Needs (NBI)</b>: a household is counted if it has at least one of: more than three people per room; inadequate housing (e.g. a shack or a room in a tenement); no toilet; a child aged 6–12 not attending school; or four or more people per employed member with a head who did not complete primary school. It measures structural deprivation, not income.<br>
+    <b>Current-resource deprivation (IPMH)</b>: INDEC's material deprivation index, households that cannot cover current needs; closer to income poverty.<br>
+    <b>Needs-weighted rule</b>: the same total pool split 50% by population and 50% by households with NBI. An illustration of distance from need, not a policy proposal.</p>
 
     <p class="foot">Code, data sources and methods: <a href="https://github.com/diegolestani/pba-transfers-need">GitHub repository</a>.<br>
     Sources: INDEC, Censo 2022 (REDATAM); Province of Buenos Aires open data portal (tract boundaries, transfers, health facilities; CC BY 4.0). The needs-weighted rule is illustrative, not a policy proposal.</p>
@@ -81,10 +89,10 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_L
 const renderer = L.canvas({ padding: 0.5 });
 
 const SCALES = {
-  nbi:  { breaks:[2,5,10,20], colors:['#f2efe9','#f6c99a','#ec8a5b','#c94a3a','#7a1c2e'], unit:'%', title:'Households with NBI' },
-  ipmh: { breaks:[10,20,30,40], colors:['#f2efe9','#f6c99a','#ec8a5b','#c94a3a','#7a1c2e'], unit:'%', title:'Current-resource deprivation (IPMH)' },
+  nbi:  { breaks:[2,5,10,20], colors:['#f2efe9','#f6c99a','#ec8a5b','#c94a3a','#7a1c2e'], unit:'%', title:'Households with Unmet Basic Needs (NBI)' },
+  ipmh: { breaks:[10,20,30,40], colors:['#f2efe9','#f6c99a','#ec8a5b','#c94a3a','#7a1c2e'], unit:'%', title:'Households deprived of current resources (IPMH)' },
   tpc:  { breaks:[200000,300000,500000,1000000], colors:['#f1eef6','#bdc9e1','#74a9cf','#2b8cbe','#045a8d'], unit:' $', title:'Transfers per person, 2025 (pesos)' },
-  gap:  { breaks:[-50,-20,20,50], colors:['#3d5a8a','#8aa6c8','#f2efe9','#ec8a5b','#7a1c2e'], unit:'%', title:'Change vs actual transfers' }
+  gap:  { breaks:[-50,-20,20,50], colors:['#3d5a8a','#8aa6c8','#f2efe9','#ec8a5b','#7a1c2e'], unit:'%', title:'Change vs actual 2025 transfers under the needs-weighted rule' }
 };
 const fmt = n => n.toLocaleString('en-US');
 function colorFor(s, v) { if (v === null || v === undefined || isNaN(v)) return '#cccccc';
@@ -135,13 +143,15 @@ function show(layerKey) {
   if (layerKey.startsWith('tract')) {
     const field = layerKey === 'tract_nbi' ? 'n' : 'i', key = layerKey === 'tract_nbi' ? 'nbi' : 'ipmh';
     current = L.geoJSON(tracts, { pointToLayer: noPoint, style: tractStyle(field, key), onEachFeature: (f, l) => l.bindPopup(tractPopup(f)) }).addTo(map);
-    setLegend(key, 'Rural tracts shown faded');
+    setLegend(key, (key === 'nbi' ? 'Crowding, poor housing, no toilet,<br>child out of school or low income capacity.<br>' : '') + 'Rural tracts shown faded');
     outline.addTo(map); outline.bringToFront();
   } else {
     const cfg = { part_nbi: ['n', 'nbi'], part_tpc: ['tpc', 'tpc'], part_gap: ['gap', 'gap'] }[layerKey];
     current = L.geoJSON(partidos, { pointToLayer: noPoint, style: partidoStyle(cfg[0], cfg[1]), onEachFeature: (f, l) => l.bindPopup(partidoPopup(f)) }).addTo(map);
     if (map.hasLayer(outline)) map.removeLayer(outline);
-    setLegend(cfg[1], layerKey === 'part_gap' ? 'Illustrative static reallocation' : '');
+    setLegend(cfg[1], { part_gap: 'Same pool: 50% population, 50% NBI households.<br>Illustrative, not a proposal.',
+                        part_nbi: 'Partido average: compare with the tract view',
+                        part_tpc: 'Provincial transfers to municipalities / population' }[layerKey]);
   }
   [hospLayer, capsLayer].forEach(g => { if (map.hasLayer(g)) g.eachLayer(m => m.bringToFront && m.bringToFront()); });
 }
