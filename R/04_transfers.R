@@ -66,12 +66,12 @@ d <- d |>
          gap_blend = cf_blend / tr_total - 1)
 
 dir.create("output/tables", recursive = TRUE, showWarnings = FALSE)
-write.csv(st_drop_geometry(d) |>
+readr::write_csv(st_drop_geometry(d) |>
             select(cod_partido, partido, gba24, pob_total, hog_total, hog_nbi, nbi_share,
                    ipmh_corr_share, tr_copa, tr_educ, tr_other, tr_total, tr_pc,
                    cf_need, cf_blend, gap_need, gap_blend),
-          "output/tables/transfers_2025_partido.csv", row.names = FALSE)
-write.csv(coefs, "output/tables/concentration.csv", row.names = FALSE)
+          "output/tables/transfers_2025_partido.csv")
+readr::write_csv(coefs, "output/tables/concentration.csv")
 
 # --- Figure 3: transfers per capita vs need ---
 dd <- st_drop_geometry(d)
@@ -139,7 +139,7 @@ reg <- bind_rows(lapply(names(mods), function(n) {
   data.frame(model = n, term = rownames(co), estimate = co[, 1], std_error = co[, 2],
              p_value = co[, 4], r2 = summary(mods[[n]])$r.squared, n = nobs(mods[[n]]))
 }))
-write.csv(reg, "output/tables/regression_transfers_pc.csv", row.names = FALSE)
+readr::write_csv(reg, "output/tables/regression_transfers_pc.csv")
 
 # Summary
 gba <- dd |> group_by(gba24) |> summarise(pc = sum(tr_total) / sum(pob_total), nbi = sum(hog_nbi) / sum(hog_total))

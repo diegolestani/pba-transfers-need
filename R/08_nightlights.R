@@ -17,7 +17,7 @@ tw <- st_transform(tracts, crs(ntl))
 tracts$ntl_mean <- exact_extract(ntl, tw, "mean", progress = FALSE)
 tracts$log_ntl <- log1p(tracts$ntl_mean)
 td <- st_drop_geometry(tracts)
-write.csv(td[, c("cod_radio", "ntl_mean")], "data/processed/tract_ntl.csv", row.names = FALSE)
+readr::write_csv(td[, c("cod_radio", "ntl_mean")], "data/processed/tract_ntl.csv")
 
 # How much of the variation in tract NBI rates does light intensity explain?
 # (household-weighted; with partido fixed effects = within-partido explanatory power)
@@ -32,7 +32,7 @@ fit <- function(d, label) {
 }
 res <- rbind(fit(td, "All tracts"), fit(td[td$gba24, ], "Greater Buenos Aires"),
              fit(td[!td$gba24 & td$urban_rural == "U", ], "Urban tracts, rest of province"))
-write.csv(res, "output/tables/ntl_fit.csv", row.names = FALSE)
+readr::write_csv(res, "output/tables/ntl_fit.csv")
 
 # Figure 9: binned scatter (20 household-weighted bins of radiance), by area
 td <- td |> mutate(area = ifelse(gba24, "Greater Buenos Aires", "Rest of province")) |>

@@ -43,7 +43,7 @@ mi <- data.frame(
   morans_i = c(mi_nbi$estimate[1], mi_ipmh$estimate[1], mi_p_nbi$estimate[1], mi_p_tr$estimate[1]),
   p_value = c(mi_nbi$p.value, mi_ipmh$p.value, mi_p_nbi$p.value, mi_p_tr$p.value),
   n = c(nrow(tracts), nrow(tracts), nrow(partidos), nrow(partidos)))
-write.csv(mi, "output/tables/morans_i.csv", row.names = FALSE)
+readr::write_csv(mi, "output/tables/morans_i.csv")
 
 # --- Robustness: within-partido share of variance, excluding small (noisy) tracts ---
 decomp <- function(d, min_hh) {
@@ -55,7 +55,7 @@ decomp <- function(d, min_hh) {
 }
 td <- st_drop_geometry(tracts)
 rob <- bind_rows(lapply(c(1, 50, 100, 200), function(m) decomp(td, m)))
-write.csv(rob, "output/tables/variance_decomposition_robustness.csv", row.names = FALSE)
+readr::write_csv(rob, "output/tables/variance_decomposition_robustness.csv")
 
 # --- Figure 7: LISA clusters, Greater Buenos Aires ---
 gba <- filter(tracts, gba24)

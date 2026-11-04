@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Transfers and Need in Buenos Aires: Policy Note</title>
+<style>
+  @page { size: Letter; margin: 0.7in 0.75in 0.7in 0.75in; }
+  body { font-family: "Liberation Serif", Georgia, "Times New Roman", serif; font-size: 10pt; line-height: 1.32; color: #1f2328; margin: 0; }
+  .kicker { font-family: "Liberation Sans", Arial, sans-serif; font-size: 8pt; letter-spacing: .08em; text-transform: uppercase; color: #7a1c2e; margin: 0 0 4px; }
+  h1 { font-family: "Liberation Sans", Arial, sans-serif; font-size: 17pt; line-height: 1.2; margin: 0 0 4px; }
+  .byline { font-family: "Liberation Sans", Arial, sans-serif; font-size: 8.5pt; color: #5b6470; margin: 0 0 12px; }
+  h2 { font-family: "Liberation Sans", Arial, sans-serif; font-size: 10.5pt; color: #3d5a8a; margin: 10px 0 3px; text-transform: uppercase; letter-spacing: .04em; }
+  p { margin: 0 0 7px; text-align: justify; hyphens: auto; }
+  .box { border-left: 3px solid #7a1c2e; background: #f6f3f1; padding: 8px 12px; margin: 0 0 10px; }
+  .box p { margin: 0 0 5px; }
+  .box p:last-child { margin: 0; }
+  ul, ol { margin: 0 0 7px 18px; padding: 0; }
+  li { margin: 0 0 4px; text-align: justify; }
+  figure { margin: 6px 0 8px; text-align: center; break-inside: avoid; }
+  figure img { width: 64%; }
+  figcaption { font-family: "Liberation Sans", Arial, sans-serif; font-size: 8pt; color: #5b6470; text-align: left; margin: 2px 6% 0; }
+  table { border-collapse: collapse; width: 100%; font-family: "Liberation Sans", Arial, sans-serif; font-size: 8.6pt; margin: 4px 0 8px; }
+  th, td { border-bottom: 1px solid #d9dde3; padding: 3px 6px; text-align: left; vertical-align: top; }
+  th { color: #5b6470; font-weight: 600; }
+  td.n { text-align: right; white-space: nowrap; }
+  .small { font-family: "Liberation Sans", Arial, sans-serif; font-size: 8pt; color: #5b6470; }
+  a { color: #3d5a8a; }
+</style>
+</head>
+<body>
+
+<p class="kicker">Policy note · Buenos Aires province · November 2026</p>
+<h1>Provincial transfers to municipalities do not follow need</h1>
+<p class="byline">Diego Lestani · Analysis of public data: INDEC Censo 2022 and Province of Buenos Aires open data (transfers 2025, health facilities 2025)</p>
+
+<div class="box">
+  <p><b>1. Need is concentrated where transfers per person are lowest.</b> Greater Buenos Aires has a higher share of households with Unmet Basic Needs (NBI) than the rest of the province (7.0% vs 5.4%) but received about 190,000 pesos per person in 2025, against 348,000 elsewhere.</p>
+  <p><b>2. The formula rewards size and hospitals, not deprivation.</b> Municipal size and hospital provision explain about 80% of the variation in transfers per person; once they are accounted for, deprivation has no significant association with transfers.</p>
+  <p><b>3. Municipal averages hide most of the problem.</b> 83% of the variation in deprivation across census tracts lies <em>within</em> municipalities. Sewer connection ranges from 87% of households in the least deprived fifth of Greater Buenos Aires tracts to 28% in the most deprived.</p>
+</div>
+
+<h2>The issue</h2>
+<p>Buenos Aires municipalities receive a fixed share of provincial revenue through coparticipación (Ley 10.559) plus smaller earmarked funds: about 4.35 trillion pesos in 2025, 77% of it coparticipación. Each municipality's share is set by one coefficient: 58% reflects population, area and inverse tax capacity; 37% health indicators (beds, consultations, patient-days, discharges, inpatient facilities); 5% social services. No component measures deprivation. This note asks whether the allocation reaches the places with the greatest need.</p>
+
+<h2>What the data show</h2>
+<p><b>Transfers are concentrated among the less deprived municipalities.</b> Ranking the 135 municipalities from most to least deprived, households with NBI have a concentration coefficient of −0.18 (concentrated among the most deprived), while transfers have +0.11 (concentrated among the least deprived). The pattern holds, more weakly, with an income-closer measure of deprivation (INDEC's IPMH).</p>
+
+<figure>
+  <img src="../output/figures/fig3_transfers_vs_need.png" alt="Transfers per person against share of households with NBI, by partido">
+  <figcaption>Transfers per person (2025, log scale) against the share of households with NBI (2022), by municipality. Larger, more deprived municipalities in Greater Buenos Aires (red) receive the least per person.</figcaption>
+</figure>
+
+<p><b>Size and hospitals drive the allocation.</b> A municipality 1% larger receives about 0.3–0.4% less per person; size alone explains three quarters of the variation. Municipalities with more public hospitals per resident receive more, as the health component intends. Neither factor tracks deprivation: small rural municipalities with their own hospitals receive the most per person, large deprived peri-urban ones the least.</p>
+
+<p><b>Services lag where deprivation is concentrated.</b> Primary care centres are well located, but public general hospitals are not: in Greater Buenos Aires, 10.8% of people in the most deprived fifth of census tracts live more than 5 km from one, against 1.5% in the least deprived. The sewer gap is steeper still, and transfers bear no relation to it.</p>
+
+<table>
+  <tr><th>Indicator</th><th>Greater Buenos Aires</th><th>Rest of province</th></tr>
+  <tr><td>Households with NBI (2022)</td><td class="n">7.0%</td><td class="n">5.4%</td></tr>
+  <tr><td>Provincial transfers per person (2025)</td><td class="n">≈ 190,000 pesos</td><td class="n">≈ 348,000 pesos</td></tr>
+  <tr><td>Sewer connection, least vs most deprived fifth of tracts</td><td class="n">87% vs 28%</td><td class="n">82% vs 23%</td></tr>
+  <tr><td>Distance to nearest public general hospital, least vs most deprived fifth</td><td class="n">1.8 vs 2.9 km</td><td class="n">3.5 vs 3.8 km</td></tr>
+</table>
+
+<p><b>The gap is large.</b> As an illustration only, splitting the same pool 50% by population and 50% by households with NBI would raise transfers by more than 20% in 24 municipalities, mostly in Greater Buenos Aires, and cut them by more than 20% in 92. The exercise ignores the fixed costs of small municipalities; it shows distance from need, not a feasible reform.</p>
+
+<h2>Policy implications</h2>
+<ol>
+  <li><b>Introduce an explicit need component, phased in.</b> Allocate a share of the general regime on census-based deprivation (NBI or IPMH, updated with each census), with hold-harmless floors for small municipalities during the transition.</li>
+  <li><b>Reconsider what the health component rewards.</b> Paying for beds and activity favours municipalities that already run hospitals; weighting part of it by population served, or coverage of deprived catchment areas, would align it with need.</li>
+  <li><b>Target infrastructure below the municipal level.</b> Most deficits lie within municipalities, beyond the reach of formula transfers. A provincial water and sewer fund could allocate projects on tract-level census deficits, which are already available.</li>
+  <li><b>Publish the components of the coefficient.</b> The province computes each coefficient from its components but publishes only the total; releasing the breakdown would allow the formula to be assessed and reforms simulated.</li>
+</ol>
+<p>Trade-offs: small municipalities have real fixed costs; changing Ley 10.559 requires legislative approval and touches every municipal budget; and need-based transfers can weaken incentives to reduce measured deprivation, which favours census indicators municipalities cannot manipulate.</p>
+
+<h2>Scope and limitations</h2>
+<p class="small">The analysis is descriptive: regressions describe associations, not causal effects. NBI measures structural deprivation (housing, sanitation, schooling, subsistence capacity), not income; results are checked with IPMH. Deprivation and population are from the 2022 census; transfers and facilities from 2025. Distances are straight-line. Full methods, code and data: <a href="https://github.com/diegolestani/pba-transfers-need">github.com/diegolestani/pba-transfers-need</a>; interactive map: <a href="https://diegolestani.github.io/pba-transfers-need/">diegolestani.github.io/pba-transfers-need</a>. Formula weights as described in CREEBBA, <em>Indicadores de Actividad Económica</em> 161, and Ley 10.559.</p>
+
+</body>
+</html>

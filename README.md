@@ -2,7 +2,7 @@
 
 How the Province of Buenos Aires distributes resources to its 135 municipalities (partidos), compared with where deprivation is concentrated at census-tract level (*radio censal*, INDEC's smallest census unit, about 250 households on average in Buenos Aires), and with access to public health facilities.
 
-**[Interactive map](https://diegolestani.github.io/pba-transfers-need/)**
+**[Interactive map](https://diegolestani.github.io/pba-transfers-need/)** · **[Two-page policy note (PDF)](policy-note/policy_note.pdf)**
 
 ## Summary
 
@@ -113,6 +113,8 @@ Deprivation is strongly clustered: the global Moran's I of tract NBI rates is 0.
 - **Distances are straight-line** from each tract's representative point. Travel times over the road network would be longer, particularly in rural tracts.
 - **The reallocation is illustrative.** It ignores the fixed costs of small municipalities, the services the current formula pays for, own revenue capacity and behavioural responses.
 - **Small tracts give noisy rates.** The within-partido share is robust to excluding tracts with fewer than 50, 100 or 200 households (81–82%).
+
+The policy note (`policy-note/policy_note.html`, rendered to PDF) summarises the findings and their implications for a non-technical reader.
 
 Natural next steps: small area estimates of income poverty combining EPH with census and satellite covariates; road-network travel times; and the composition of the coparticipación coefficient by component.
 

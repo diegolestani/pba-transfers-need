@@ -1,9 +1,9 @@
-"ranking","series","concentration"
-"nbi_share","All transfers",0.114980714937838
-"nbi_share","Coparticipaci<U+00F3>n",0.121297147733861
-"nbi_share","Education fund",0.0703668221580349
-"nbi_share","Households with NBI (need)",-0.178996265797419
-"ipmh_corr_share","All transfers",0.0499508006127828
-"ipmh_corr_share","Coparticipaci<U+00F3>n",0.0539993912298605
-"ipmh_corr_share","Education fund",0.0155161936547147
-"ipmh_corr_share","Households with NBI (need)",-0.151568656564437
+ranking,series,concentration
+nbi_share,All transfers,0.11498071493783768
+nbi_share,Coparticipación,0.12129714773386113
+nbi_share,Education fund,0.07036682215803491
+nbi_share,Households with NBI (need),-0.17899626579741934
+ipmh_corr_share,All transfers,0.049950800612782786
+ipmh_corr_share,Coparticipación,0.05399939122986053
+ipmh_corr_share,Education fund,0.015516193654714683
+ipmh_corr_share,Households with NBI (need),-0.1515686565644374

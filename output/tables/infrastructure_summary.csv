@@ -1,8 +1,8 @@
-"indicator","value"
-"Piped public water (province)",0.763286100255307
-"Public sewer (province)",0.593796961109137
-"Within-partido share of variance, no piped water (%)",47.6786405555883
-"Within-partido share of variance, no sewer (%)",67.3350879370952
-"Concentration coefficient: households without sewer (ranked by sewer deficit)",-0.273444142806672
-"Concentration coefficient: transfers (ranked by sewer deficit)",-0.00156764845045632
-"Correlation: partido NBI share vs. no-sewer share",0.474242095684769
+indicator,value
+Piped public water (province),0.7632861002553065
+Public sewer (province),0.5937969611091374
+"Within-partido share of variance, no piped water (%)",47.67864055558829
+"Within-partido share of variance, no sewer (%)",67.33508793709517
+Concentration coefficient: households without sewer (ranked by sewer deficit),-0.2734441428066723
+Concentration coefficient: transfers (ranked by sewer deficit),-0.001567648450456316
+Correlation: partido NBI share vs. no-sewer share,0.4742420956847693

@@ -52,7 +52,7 @@ stopifnot(nrow(census) == nrow(nbi), all(census$cod_prov == "06"),
           all(ws$agua_total == nbi$hog_total[match(ws$cod_radio, nbi$cod_radio)]),
           n_distinct(census$cod_partido) == 135)
 
-write.csv(census, "data/processed/census_radios.csv", row.names = FALSE)
+readr::write_csv(census, "data/processed/census_radios.csv")
 cat(sprintf("Radios: %d | Partidos: %d | Households: %s | NBI: %.1f%% | IPMH current-resource deprivation: %.1f%% | Piped water: %.1f%% | Sewer: %.1f%% | Population: %s\n",
             nrow(census), n_distinct(census$cod_partido),
             format(sum(census$hog_total), big.mark = ","),

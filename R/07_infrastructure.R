@@ -47,8 +47,8 @@ summ <- data.frame(
             decomp(td, 1 - td$water_net_share), decomp(td, 1 - td$sewer_net_share),
             conc(p, "no_sewer_share", "hh_no_sewer"), conc(p, "no_sewer_share", "tr_total"),
             cor(p$nbi_share, p$no_sewer_share)))
-write.csv(byq, "output/tables/infrastructure_by_quintile.csv", row.names = FALSE)
-write.csv(summ, "output/tables/infrastructure_summary.csv", row.names = FALSE)
+readr::write_csv(byq, "output/tables/infrastructure_by_quintile.csv")
+readr::write_csv(summ, "output/tables/infrastructure_summary.csv")
 
 # Figure 8
 pl <- byq |> pivot_longer(c(water_net, sewer_net), names_to = "network", values_to = "share") |>

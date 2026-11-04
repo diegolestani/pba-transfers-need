@@ -68,12 +68,12 @@ trf <- read.csv("output/tables/transfers_2025_partido.csv", colClasses = c(cod_p
 m <- lm(log(tr_pc) ~ log(pob_total) + nbi_share + log(hosp_per_100k + 1),
         merge(hosp_p, trf[, c("cod_partido", "tr_pc")], by = "cod_partido"))
 co <- summary(m)$coefficients
-write.csv(data.frame(term = rownames(co), estimate = co[, 1], std_error = co[, 2], p_value = co[, 4],
+readr::write_csv(data.frame(term = rownames(co), estimate = co[, 1], std_error = co[, 2], p_value = co[, 4],
                      r2 = summary(m)$r.squared, n = nobs(m)),
-          "output/tables/regression_transfers_hospitals.csv", row.names = FALSE)
+          "output/tables/regression_transfers_hospitals.csv")
 
-write.csv(acc, "output/tables/access_by_quintile.csv", row.names = FALSE)
-write.csv(hosp_p, "output/tables/hospitals_partido.csv", row.names = FALSE)
+readr::write_csv(acc, "output/tables/access_by_quintile.csv")
+readr::write_csv(hosp_p, "output/tables/hospitals_partido.csv")
 st_write(select(tracts, cod_radio, dist_hosp_km, dist_caps_km),
          "data/processed/tract_access.gpkg", quiet = TRUE, delete_dsn = TRUE)
 

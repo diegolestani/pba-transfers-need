@@ -96,8 +96,8 @@ partidos <- left_join(partidos, spread, by = "cod_partido")
 dir.create("output/tables", recursive = TRUE, showWarnings = FALSE)
 st_write(tracts, "data/processed/tracts.gpkg", quiet = TRUE, delete_dsn = TRUE)
 st_write(partidos, "data/processed/partidos.gpkg", quiet = TRUE, delete_dsn = TRUE)
-write.csv(st_drop_geometry(partidos), "output/tables/partidos_need.csv", row.names = FALSE)
-write.csv(vd, "output/tables/variance_decomposition.csv", row.names = FALSE)
+readr::write_csv(st_drop_geometry(partidos), "output/tables/partidos_need.csv")
+readr::write_csv(vd, "output/tables/variance_decomposition.csv")
 
 cat(sprintf("Tracts: %d (%d with households) | Partidos: %d\n",
             nrow(tracts), sum(tracts$hog_total > 0), nrow(partidos)))

@@ -1,5 +1,5 @@
-"level","variable","morans_i","p_value","n"
-"tract","NBI share",0.446268616831037,0,23845
-"tract","IPMH current-resource share",0.49209336216159,0,23845
-"partido","NBI share",0.580926864459394,1.04937386864808e-27,135
-"partido","log transfers per capita",0.636965627910585,2.23547510992737e-32,135
+level,variable,morans_i,p_value,n
+tract,NBI share,0.44626861683103736,0,23845
+tract,IPMH current-resource share,0.4920933621615899,0,23845
+partido,NBI share,0.5809268644593939,1.0493738686480838e-27,135
+partido,log transfers per capita,0.6369656279105853,2.235475109927366e-32,135
