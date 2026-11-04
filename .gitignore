@@ -4,3 +4,4 @@
 *.Rproj
 output/*.html
 .DS_Store
+data/processed/*.gpkg
