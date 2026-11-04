@@ -50,6 +50,7 @@
       <label><input type="radio" name="layer" value="tract_nbi" checked><span>Unmet Basic Needs by census tract<small>Share of households with NBI</small></span></label>
       <label><input type="radio" name="layer" value="tract_ipmh"><span>Current-resource deprivation by tract<small>IPMH, an income proxy</small></span></label>
       <label><input type="radio" name="layer" value="tract_sewer"><span>Households without sewer connection<small>Public sewer network, by census tract</small></span></label>
+      <label><input type="radio" name="layer" value="tract_ntl"><span>Nighttime lights, 2022<small>VIIRS satellite radiance, by census tract</small></span></label>
       <label><input type="radio" name="layer" value="part_nbi"><span>Unmet Basic Needs by partido<small>What partido averages show</small></span></label>
       <label><input type="radio" name="layer" value="part_tpc"><span>Transfers per person, 2025<small>Provincial transfers to municipalities</small></span></label>
       <label><input type="radio" name="layer" value="part_gap"><span>Change under a needs-weighted rule<small>Same pool, 50% population and 50% NBI households</small></span></label>
@@ -95,6 +96,7 @@ const SCALES = {
   nbi:  { breaks:[2,5,10,20], colors:['#f2efe9','#f6c99a','#ec8a5b','#c94a3a','#7a1c2e'], unit:'%', title:'Households with Unmet Basic Needs (NBI)' },
   ipmh: { breaks:[10,20,30,40], colors:['#f2efe9','#f6c99a','#ec8a5b','#c94a3a','#7a1c2e'], unit:'%', title:'Households deprived of current resources (IPMH)' },
   sewer:{ breaks:[20,40,60,80], colors:['#f1eef6','#bdc9e1','#74a9cf','#2b8cbe','#045a8d'], unit:'%', title:'Households not connected to the public sewer' },
+  ntl:  { breaks:[5,20,40,80], colors:['#0b0b1a','#3b2f6b','#9c5a9e','#f08a5d','#ffe08a'], unit:'', title:'Nighttime radiance, 2022 (nW/cm²/sr)' },
   tpc:  { breaks:[200000,300000,500000,1000000], colors:['#f1eef6','#bdc9e1','#74a9cf','#2b8cbe','#045a8d'], unit:' $', title:'Transfers per person, 2025 (pesos)' },
   gap:  { breaks:[-50,-20,20,50], colors:['#3d5a8a','#8aa6c8','#f2efe9','#ec8a5b','#7a1c2e'], unit:'%', title:'Change vs actual 2025 transfers under the needs-weighted rule' }
 };
@@ -105,6 +107,7 @@ function labelsFor(key) {
   const b = SCALES[key].breaks;
   if (key === 'tpc') return ['< 200k', '200k–300k', '300k–500k', '500k–1M', '1M or more'];
   if (key === 'gap') return ['Lose > 50%', 'Lose 20–50%', 'Within ±20%', 'Gain 20–50%', 'Gain > 50%'];
+  if (key === 'ntl') return ['< 5', '5–20', '20–40', '40–80', '80 or more'];
   return [`< ${b[0]}%`, `${b[0]}–${b[1]}%`, `${b[1]}–${b[2]}%`, `${b[2]}–${b[3]}%`, `${b[3]}% or more`];
 }
 
@@ -133,7 +136,7 @@ function tractPopup(f) {
   const p = f.properties;
   return `<b>Census tract ${p.id}</b><br>${p.p}${p.ur === 'R' ? ' (rural)' : ''}<br>` +
          `Households: ${fmt(p.h)}<br>With NBI: ${p.n}%<br>Current-resource deprivation: ${p.i}%<br>` +
-         `Without sewer connection: ${p.s}% · without piped water: ${p.w}%`;
+         `Without sewer connection: ${p.s}% · without piped water: ${p.w}%<br>Nighttime radiance: ${p.l}`;
 }
 function partidoPopup(f) {
   const p = f.properties;
@@ -146,11 +149,12 @@ function show(layerKey) {
   if (current) map.removeLayer(current);
   if (outline) outline.bringToFront();
   if (layerKey.startsWith('tract')) {
-    const field = { tract_nbi: 'n', tract_ipmh: 'i', tract_sewer: 's' }[layerKey],
-          key = { tract_nbi: 'nbi', tract_ipmh: 'ipmh', tract_sewer: 'sewer' }[layerKey];
+    const field = { tract_nbi: 'n', tract_ipmh: 'i', tract_sewer: 's', tract_ntl: 'l' }[layerKey],
+          key = { tract_nbi: 'nbi', tract_ipmh: 'ipmh', tract_sewer: 'sewer', tract_ntl: 'ntl' }[layerKey];
     current = L.geoJSON(tracts, { pointToLayer: noPoint, style: tractStyle(field, key), onEachFeature: (f, l) => l.bindPopup(tractPopup(f)) }).addTo(map);
     setLegend(key, (key === 'nbi' ? 'Crowding, poor housing, no toilet,<br>child out of school or low income capacity.<br>' :
-                    key === 'sewer' ? 'Network infrastructure is a provincial and<br>municipal investment responsibility.<br>' : '') + 'Rural tracts shown faded');
+                    key === 'sewer' ? 'Network infrastructure is a provincial and<br>municipal investment responsibility.<br>' :
+                    key === 'ntl' ? 'VIIRS annual composite (masked), mean per tract.<br>Explains little of tract deprivation.<br>' : '') + 'Rural tracts shown faded');
     outline.addTo(map); outline.bringToFront();
   } else {
     const cfg = { part_nbi: ['n', 'nbi'], part_tpc: ['tpc', 'tpc'], part_gap: ['gap', 'gap'] }[layerKey];

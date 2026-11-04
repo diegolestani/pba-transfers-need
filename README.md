@@ -20,6 +20,7 @@ How the Province of Buenos Aires distributes resources to its 135 municipalities
 | Same | Households by source of drinking water and toilet drainage | Census tract | `data/raw/water_sewer_BA_2022.xlsx` |
 | Province of Buenos Aires open data portal, *Radios censales* (CC BY 4.0) | Census tract boundaries, 2022 | Census tract | `data/raw/radios-censales-2022-shp.zip` |
 | Province of Buenos Aires open data portal, *Transferencias a municipios* (CC BY 4.0), Ministry of Economy | Monthly transfers to municipalities by concept, Jan 2010 – Jul 2026 | Partido | `data/raw/transferencias-municipios-012010_072026.csv` |
+| VIIRS Nighttime Day/Night Annual Band Composites V2.2, Earth Observation Group (Colorado School of Mines), band `average_masked`, via Google Earth Engine (`gee/viirs_ntl_2022_export.js`) | Nighttime radiance, 2022, ~460 m | Raster | `data/raw/viirs_ntl_2022_pba.tif` |
 | Province of Buenos Aires open data portal, *Establecimientos de salud* (CC BY 4.0), Ministry of Health | Public health facilities with coordinates, type and dependency, 2025 | Point | `data/raw/establecimientos_salud_publicos-2025.csv` |
 
 NBI follows INDEC's definition: a household is NBI if it has at least one of overcrowding (more than three people per room), inadequate housing, no toilet, a child aged 6–12 not attending school, or low subsistence capacity. It is a structural deprivation measure, not income poverty.
@@ -30,15 +31,16 @@ IPMH (Índice de Privación Material de los Hogares) classifies households by de
 
 | Script | Does |
 |---|---|
-| `R/01_clean_census.R` | Reads the REDATAM exports, restores 9-digit census tract (radio) codes, joins households, population and IPMH, writes `data/processed/census_radios.csv` |
+| `R/01_clean_census.R` | Reads the REDATAM exports, restores 9-digit census tract (radio) codes, joins households, population, IPMH, piped water and sewer connection, writes `data/processed/census_radios.csv` |
 
 | `R/02_geography.R` | Joins tract boundaries to census data, builds partido aggregates, and decomposes tract-level variation in deprivation into within- and between-partido components |
 | `R/03_maps_need.R` | Figure 1 (partido vs. tract-level NBI) and Figure 2 (spread of tract NBI rates within partidos) |
 | `R/04_transfers.R` | 2025 transfers per capita by partido, concentration curves with respect to need, size-controlled regression, and a needs-based counterfactual allocation (Figures 3–5) |
 | `R/05_access.R` | Straight-line distance from each tract to the nearest public general hospital and primary care centre, by deprivation quintile; hospital provision and transfers (Figure 6) |
 | `R/06_spatial_dependence.R` | Global and local Moran's I of deprivation (tracts) and transfers per capita (partidos); robustness of the within-partido share to excluding small tracts (Figure 7) |
-| `R/08_infrastructure.R` | Piped water and sewer connection by tract deprivation, within-partido variation, and concentration of the sewer deficit vs. transfers (Figure 8) |
-| `R/07_web_map_data.R` | Exports simplified GeoJSON layers for the interactive map in `docs/` (served with GitHub Pages) |
+| `R/07_infrastructure.R` | Piped water and sewer connection by tract deprivation, within-partido variation, and concentration of the sewer deficit vs. transfers (Figure 8) |
+| `R/08_nightlights.R` | Zonal statistics of VIIRS nighttime radiance by census tract and how much of tract deprivation it explains, across and within partidos (Figure 9) |
+| `R/09_web_map_data.R` | Exports simplified GeoJSON layers for the interactive map in `docs/` (served with GitHub Pages) |
 
 
 ## Results
@@ -88,6 +90,15 @@ NBI's sanitation component counts households without a toilet, not those without
 
 ![Infrastructure by quintile](output/figures/fig8_infrastructure_by_quintile.png)
 
+### Nighttime lights
+
+Nighttime lights are the most common satellite input for poverty mapping. I computed the area-weighted mean VIIRS radiance (2022 annual composite, with background noise and outliers masked) for each census tract and asked how much of tract deprivation it explains.
+
+- **Light intensity is associated with lower deprivation, but weakly.** In Greater Buenos Aires, NBI rates fall from 15% in the darkest twentieth of tracts to about 6% and then stay flat: lights flag the poorly lit urban fringe, but do not distinguish deprived from non-deprived neighbourhoods across most of the conurbano. Radiance explains 12% of the household-weighted variation in tract NBI rates in Greater Buenos Aires and 2% province-wide; within partidos it adds about 10 percentage points of explained variance.
+- **Implication for small area estimation.** At this resolution (about 460 m), and in dense, uniformly lit cities, nightlights on their own are a weak covariate for tract-level deprivation. A model would need finer inputs (building footprints, census covariates, imagery-derived features) alongside them.
+
+![Nighttime lights vs NBI](output/figures/fig9_nightlights_vs_nbi.png)
+
 ### Spatial clustering
 
 Deprivation is strongly clustered: the global Moran's I of tract NBI rates is 0.45 (0.49 for IPMH current-resource deprivation; queen contiguity, row-standardised weights). Local Moran's I identifies 1,261 tracts in significant high-deprivation clusters after correcting for multiple testing (false discovery rate, 5%). In Greater Buenos Aires these clusters form belts along the western and southern edge of the conurbano that span several partidos, so no single municipality's budget lines up with them. At partido level, transfers per capita are also spatially clustered (Moran's I 0.64), reflecting the rural-interior versus conurbano divide.
@@ -107,10 +118,10 @@ Natural next steps: small area estimates of income poverty combining EPH with ce
 
 ## Reproducing
 
-Run the scripts in order from the repository root (`Rscript R/01_clean_census.R`, then 02 to 07). Raw data are in `data/raw/` as downloaded; generated GeoPackages are written to `data/processed/` and are not tracked.
+Run the scripts in order from the repository root (`Rscript R/01_clean_census.R`, then 02 to 09 in order; 09 exports the web map layers). The nighttime lights raster can be regenerated with `gee/viirs_ntl_2022_export.js` in Google Earth Engine. Raw data are in `data/raw/` as downloaded; generated GeoPackages are written to `data/processed/` and are not tracked.
 
 Code developed with AI assistance; analysis design, checks and interpretation by the author.
 
 ## Requirements
 
-R (≥ 4.3) with `readxl`, `readr`, `dplyr`, `tidyr`, `sf`, `spdep`, `ggplot2`, `patchwork`, `scales`.
+R (≥ 4.3) with `readxl`, `readr`, `dplyr`, `tidyr`, `sf`, `terra`, `exactextractr`, `spdep`, `ggplot2`, `patchwork`, `scales`.
