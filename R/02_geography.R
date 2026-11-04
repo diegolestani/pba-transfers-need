@@ -31,9 +31,10 @@ tracts <- st_read("/vsizip/data/raw/radios-censales-2022-shp.zip/shp22/radios-ce
             partido_raw = NOMDEPTO, urban_rural = TIPO)
 
 # The source file has a corrupted character in one name; fix by code
-tracts$partido_raw[tracts$cod_partido == "06134"] <- "CAÑUELAS"
+tracts$partido_raw[tracts$cod_partido == "06134"] <- "CA\u00d1UELAS"
 tracts <- tracts |>
-  mutate(partido = title_name(partido_raw), gba24 = partido_raw %in% GBA24) |>
+  mutate(partido = title_name(partido_raw), gba24 = partido_raw %in% GBA24,
+         partido = ifelse(cod_partido == "06134", "Ca\u00f1uelas", partido)) |>
   st_make_valid() |>
   st_transform(CRS_PBA)
 stopifnot(sum(GBA24 %in% tracts$partido_raw) == 24)
