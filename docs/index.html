@@ -59,6 +59,7 @@
     <div class="layers">
       <label><input type="checkbox" id="ov_hosp"><span>Public general hospitals (290)</span></label>
       <label><input type="checkbox" id="ov_caps"><span>Primary care centres (2,121)<small>Visible when zoomed in</small></span></label>
+      <label><input type="checkbox" id="ov_fade" checked><span>Fade rural tracts<small>Large rural tracts hold few households; untick to show them at full colour</small></span></label>
     </div>
 
     <h2>Key takeaways</h2>
@@ -125,7 +126,8 @@ let tracts = null, partidos = null, outline = null, current = null;
 const hospLayer = L.layerGroup(), capsLayer = L.layerGroup();
 
 function tractStyle(field, key) {
-  return f => ({ renderer, stroke: false, fillOpacity: f.properties.ur === 'R' ? 0.35 : 0.85,
+  const fade = document.getElementById('ov_fade').checked;
+  return f => ({ renderer, stroke: false, fillOpacity: (fade && f.properties.ur === 'R') ? 0.35 : 0.85,
                  fillColor: colorFor(SCALES[key], f.properties[field]) });
 }
 function partidoStyle(field, key) {
@@ -154,7 +156,7 @@ function show(layerKey) {
     current = L.geoJSON(tracts, { pointToLayer: noPoint, style: tractStyle(field, key), onEachFeature: (f, l) => l.bindPopup(tractPopup(f)) }).addTo(map);
     setLegend(key, (key === 'nbi' ? 'Crowding, poor housing, no toilet,<br>child out of school or low income capacity.<br>' :
                     key === 'sewer' ? 'Network infrastructure is a provincial and<br>municipal investment responsibility.<br>' :
-                    key === 'ntl' ? 'VIIRS annual composite (masked), mean per tract.<br>Explains little of tract deprivation.<br>' : '') + 'Rural tracts shown faded');
+                    key === 'ntl' ? 'VIIRS annual composite (masked), mean per tract.<br>Explains little of tract deprivation.<br>' : '') + (document.getElementById('ov_fade').checked ? 'Rural tracts shown faded' : ''));
     outline.addTo(map); outline.bringToFront();
   } else {
     const cfg = { part_nbi: ['n', 'nbi'], part_tpc: ['tpc', 'tpc'], part_gap: ['gap', 'gap'] }[layerKey];
@@ -198,6 +200,9 @@ Promise.all([
 document.querySelectorAll('input[name="layer"]').forEach(r => r.addEventListener('change', e => show(e.target.value)));
 document.getElementById('ov_hosp').addEventListener('change', e => e.target.checked ? hospLayer.addTo(map) : map.removeLayer(hospLayer));
 document.getElementById('ov_caps').addEventListener('change', updateCaps);
+document.getElementById('ov_fade').addEventListener('change', () => {
+  const sel = document.querySelector('input[name="layer"]:checked'); if (sel) show(sel.value);
+});
 map.on('zoomend', updateCaps);
 </script>
 </body>
